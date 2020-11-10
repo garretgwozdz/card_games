@@ -1,7 +1,7 @@
 import socket
 import time
 
-HOST = '192.168.1.99'
+HOST = '127.0.0.1'
 
 PORT = 2929
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

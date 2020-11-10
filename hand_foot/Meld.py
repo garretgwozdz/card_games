@@ -13,21 +13,21 @@ class Meld:
 		self.wild = True
 		self.cardType = '2'
 		for card in self.cards:
-			if card['value'] != '2' or card['value'] != 'JOKER':
+			if card['code'][0] != '2' or card['code'][0] != 'X':
 				self.wild = False
 				self.cardType = card['value']
 				break
 		if not self.wild:
 			for card in cards:
-				if card['value'] == '2' or card['value'] == 'JOKER':
+				if card['code'][0] == '2' or card['code'][0] == 'X':
 					self.mixed = True
 					break
 
-	def add(card, self):
+	def add(self, card):
 		self.cards.append(card)
-		if len(cards) > 7:
+		if len(self.cards) > 7:
 			self.canasta = True
-		if not self.mixed and (card['value'] == 'JOKER' or card['value'] == '2'):
+		if not self.mixed and (card['code'][0] == 'X' or card['code'][0] == '2'):
 			self.mixed = True
 
 	def getCanasta(self):

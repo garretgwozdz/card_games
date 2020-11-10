@@ -12,6 +12,7 @@ class Player:
 
 
 	def __init__(self, client, addr, game, hand, foot):
+		self.melds = []
 		self.client = client
 		self.addr = addr
 		self.game = game
@@ -128,15 +129,29 @@ class Player:
 			return (False, "You must chooose cards from your hand to lay down\n")
 
 
-		if len(self.getMelds()) == 0:
-			if(self.score(cards) < 90):
-				return (False, "You Must Have An Initial LayDown of at least 90 points\n")
+		# if len(self.getMelds()) == 0:
+		# 	if(self.score(cards) < 90):
+		# 		return (False, "You Must Have An Initial LayDown of at least 90 points\n")
 
 		while cards:
 			initLen = len(cards)
 			# Checks to see if cards have already been lain down in 
 			for card in cards:
+				#TODO: this is where you see where the wild cards go
+				wild = True
+				data = ""
+				while wild:
+					if len(self.melds) > 0 and card['value'] == "JOKER" or card["value"] == "2":
+						data = data + "What Meld would you like to put your "+card['value']+" wild card in?\n"
+						self.client.send(data.encode())
+						recv = self.client.recv(1024).decode()
+						card['value'] = recv
+						wild = False
+					else:
+						break
+
 				for meld in self.melds:
+
 					if meld.getCardType() == card['value'] and not meld.getCanasta():
 						meld.add(card)
 						cards.remove(card)
@@ -146,25 +161,31 @@ class Player:
 			wild3 = False
 			meldBool = False
 
-			for card1 in cards:
-				if card1['value'] == "JOKER" or card1['value'] == '2':
+			for x in range(len(cards)):
+				if cards[x]['value'] == "JOKER" or cards[x]['value'] == '2':
 					wild1 = True
-				for card2 in cards:
-					if card2['value'] == "JOKER" or card2['value'] == '2':
+				for y in range(1, len(cards)):
+					if cards[y]['value'] == "JOKER" or cards[y]['value'] == '2':
 						wild2 = True
-					if cards.index(card1) != cards.index(card2):
-						if card1['value'] == card2['value'] or wild1 or wild2:
-							for card3 in  cards:
-								if card3['value'] == "JOKER" or card3['value'] == '2':
+					if cards.index(cards[x]) != cards.index(cards[y]):
+						if cards[x]['value'] == cards[y]['value'] or wild1 or wild2:
+							for z in range(2, len(cards)):
+								if cards[z]['value'] == "JOKER" or cards[z]['value'] == '2':
 									wild3 = True
-								if cards.index(card1) != cards.index(card3):
-									if cards.index(card2) != cards.index(card3):
-										
-										if (card3['value'] == card1['value'] and card3['value'] == card2['value']) or (card2['value'] == card3['value'] and wild1) or (card1['value'] == card3['value'] and wild2) or (card1['value'] == card2['value'] and wild3) or (wild1 and wild3) or (wild2 and wild1) or (wild2 and wild3) or (wild1 and wild2 and wild3):
+								if cards.index(cards[x]) != cards.index(cards[z]):
+									if cards.index(cards[y]) != cards.index(cards[z]):
+										if (cards[z]['value'] == cards[x]['value'] and cards[z]['value'] == cards[y][
+											'value']) or (cards[y]['value'] == cards[z]['value'] and wild1) or (
+												cards[x]['value'] == cards[z]['value'] and wild2) or (
+												cards[x]['value'] == cards[y]['value'] and wild3) or (
+												wild1 and wild3) or (wild2 and wild1) or (wild2 and wild3) or (
+												wild1 and wild2 and wild3):
 											meldBool = True
-											print(card1['value'], card2['value'], card3['value'])
-											newMeld = Meld([card1, card2, card3])
+											print(cards[x]['value'], cards[y]['value'], cards[z]['value'])
+											newMeld = Meld([cards[x], cards[y], cards[z]])
 											self.melds.append(newMeld)
+
+											card1, card2, card3 = cards[x], cards[y], cards[z]
 											cards.remove(card3)
 											if len(self.hand) == 0:
 												self.foot.remove(card3)
@@ -269,17 +290,17 @@ class Player:
 
 	def validPickUp(self):
 		topCard = self.game.displayTopDiscard()
-		if topCard == '3C' or topCard == '3S':
+		if topCard == '3C' or topCard == '3S' or topCard[0] == '2' or topCard == 'JOKER':
 			return False
 
 		cardNum = 0
 		if len(self.hand) == 0:
 			for card in self.foot:
-				if card['code'] == 'JOKER' or card['code'] == '2' or card['code'] == topCard:
+				if card['code'] == 'JOKER' or card['code'] == '2' or card['code'][0] == topCard[0]:
 					cardNum = cardNum + 1
 		else:
 			for card in self.hand:
-				if card['code'] == 'JOKER' or card['code'] == '2' or card['code'] == topCard:
+				if card['code'] == 'JOKER' or card['code'] == '2' or card['code'][0] == topCard[0]:
 					cardNum = cardNum + 1
 		if cardNum < 2:
 			return False
@@ -315,9 +336,10 @@ class Player:
 
 	def displayPlayerInfo(self):
 		if len(self.getHand()) == 0:
-			playerInfo = 'Foot: {}\nMelds: {}\nDiscard Pile: {}'.format(self.getFoot(), self.getMelds(), self.game.displayTopDiscard())
+			playerInfo = 'Foot: {}\nPlayer 0\'s Melds: {}\nDiscard Pile: {}\nPlayer 1\'s Melds: {}'.format(self.getFoot(), self.game.players[0].getMelds(), self.game.displayTopDiscard(), self.game.players[1].getMelds())
 		else:
-			playerInfo = 'Hand: {}\nMelds: {}\nDiscard Pile: {}'.format(self.getHand(), self.getMelds(), self.game.displayTopDiscard())
+			playerInfo = 'Hand: {}\nPlayer 0\'s Melds: {}\nDiscard Pile: {}\nPlayer 1\'s Melds: {}'.format(self.getHand(), self.game.players[0].getMelds(), self.game.displayTopDiscard(), self.game.players[1].getMelds())
+
 		return playerInfo
 
 	def score(self, cards):

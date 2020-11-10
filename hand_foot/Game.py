@@ -37,9 +37,8 @@ class Game:
 
 	def play(self):
 		while(True):
-			player = self.players[self.turn]
 
-			player.turn()
+			self.players[self.turn].turn()
 
 			if self.turn == 0:
 				self.turn = 1
@@ -47,7 +46,7 @@ class Game:
 				self.turn = 0
 
 
-	def create_sockets(self, port1=2020,port2=2929,host='192.168.1.99'):
+	def create_sockets(self, port1=2020,port2=2929,host='127.0.0.1'):
 		sock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		sock1.bind((host, port1))
