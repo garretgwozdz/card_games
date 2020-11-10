@@ -8,22 +8,44 @@ class Game:
 	deck = dict()
 	players = list()
 	discardPile = list()
+	turn = int()
 	
 
 	def __init__(self):
+		self.turn = 0
 		self.socks = self.create_sockets()
 		self.deck = requests.get('https://deckofcardsapi.com/api/deck/new/shuffle/', params={'jokers_enabled':True, 'deck_count':5}).json()
-		print(self.deck)
+		#print(self.deck)
 		self.players = self.get_players()
-		for player in self.players:
-			print(player.displayPlayerInfo())
-		pass
+		self.discardPile.append(self.deal_cards(1)[0])
+
+		player0Data = self.players[0].displayPlayerInfo() + '\n' + self.players[1].displayMelds() + '\n(C)ontinue?'
+		self.players[0].getClient().send(player0Data.encode())
+
+		player1Data = self.players[1].displayPlayerInfo() +  '\n' + self.players[0].displayMelds() + '\n(C)ontinue?'
+		self.players[1].getClient().send(player1Data.encode())
+
+		datafromclient = self.players[0].getClient().recv(1024)
+		datafromclient = self.players[1].getClient().recv(1024)
+
+
+
+
 
 	def end(self):
 		pass
 
 	def play(self):
-		pass
+		while(True):
+			player = self.players[self.turn]
+
+			player.turn()
+
+			if self.turn == 0:
+				self.turn = 1
+			else:
+				self.turn = 0
+
 
 	def create_sockets(self, port1=2020,port2=2929,host='192.168.1.99'):
 		sock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -44,6 +66,10 @@ class Game:
 	def deal_cards(self, n=1):
 		response = requests.get('https://deckofcardsapi.com/api/deck/' + self.deck['deck_id'] + '/draw/?count='+ str(n))
 		return response.json()['cards']
+
+	def displayTopDiscard(self):
+		topCard = self.discardPile[-1]['code']
+		return topCard
 
 	def get_players(self):
 		players = []
@@ -76,3 +102,5 @@ class Game:
 
 
 game = Game()
+
+game.play()

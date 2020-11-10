@@ -18,8 +18,8 @@ while(playing):
     data = input()
     sock.send(data.encode())
     
-    
-    playing = False
+    if(data == "GOODBYE"):
+    	playing = False
     
 time.sleep(3)
 end_data = 'GOODBYE'
