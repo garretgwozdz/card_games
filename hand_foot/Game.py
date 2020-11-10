@@ -1,5 +1,5 @@
-# import Player.py
-# import Meld.py
+from Player import *
+import Meld
 import requests
 import socket
 
@@ -14,9 +14,9 @@ class Game:
 		self.socks = self.create_sockets()
 		self.deck = requests.get('https://deckofcardsapi.com/api/deck/new/shuffle/', params={'jokers_enabled':True, 'deck_count':5}).json()
 		print(self.deck)
-		# players = self.get_players(self)
-		response = self.deal_cards(11)
-		print(len(response))
+		self.players = self.get_players()
+		for player in self.players:
+			print(player.displayPlayerInfo())
 		pass
 
 	def end(self):
@@ -40,6 +40,10 @@ class Game:
 
 		return [sock1, sock2]
 
+	
+	def deal_cards(self, n=1):
+		response = requests.get('https://deckofcardsapi.com/api/deck/' + self.deck['deck_id'] + '/draw/?count='+ str(n))
+		return response.json()['cards']
 
 	def get_players(self):
 		players = []
@@ -50,7 +54,9 @@ class Game:
 		datafromclient = client.recv(1024)
 
 		if(datafromclient.decode()[0] == 'y'):
-			players.append((client, address))
+			newPlayer = Player(client, address, self, self.deal_cards(11), self.deal_cards(11))
+
+			players.append(newPlayer)
 			print(datafromclient.decode())
 		datafromclient = ''
 		
@@ -60,23 +66,13 @@ class Game:
 		datafromclient = client.recv(1024)
 
 		if(datafromclient.decode()[0] == 'y'):
-			players.append((client, address))
+			newPlayer = Player(client, address, self, self.deal_cards(11), self.deal_cards(11))
+
+			players.append(newPlayer)
 			print(datafromclient.decode())
 		datafromclient = ''
 		
 		return players
-	
-	def deal_cards(self, n=1):
-		print(self.deck)
-		deck = self.deck['deck_id']
-		print(deck)
-		send = 'https://deckofcardsapi.com/api/deck/' + deck + '/draw/?count='+ str(n)
-		print(send)
-		response = requests.get(send)
-		print(type(response))
-		print(response)
-		print(response.json())
-		print(type(response.json()))
-		return response
+
 
 game = Game()
