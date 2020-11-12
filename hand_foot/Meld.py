@@ -36,6 +36,12 @@ class Meld:
 	def getCardType(self):
 		return self.cardType
 
+	def getWild(self):
+		return self.wild
+
+	def getMixed(self):
+		return self.mixed
+
 	def displayCards(self):
 		cards = []
 		for card in self.cards:

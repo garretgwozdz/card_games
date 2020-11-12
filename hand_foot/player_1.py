@@ -1,9 +1,9 @@
 import socket
 import time
 
-HOST = '127.0.0.1'
+HOST = '172.30.53.10'
 
-PORT = 2020
+PORT = 2029
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     sock.connect((HOST, PORT))

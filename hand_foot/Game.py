@@ -15,14 +15,14 @@ class Game:
 		self.turn = 0
 		self.socks = self.create_sockets()
 		self.deck = requests.get('https://deckofcardsapi.com/api/deck/new/shuffle/', params={'jokers_enabled':True, 'deck_count':5}).json()
-		#print(self.deck)
+		#print(self.deck)8
 		self.players = self.get_players()
 		self.discardPile.append(self.deal_cards(1)[0])
 
-		player0Data = self.players[0].displayPlayerInfo() + '\n' + self.players[1].displayMelds() + '\n(C)ontinue?'
+		player0Data = self.players[0].displayPlayerInfo() + '\n' + '\n(C)ontinue?'
 		self.players[0].getClient().send(player0Data.encode())
 
-		player1Data = self.players[1].displayPlayerInfo() +  '\n' + self.players[0].displayMelds() + '\n(C)ontinue?'
+		player1Data = self.players[1].displayPlayerInfo() +  '\n' + '\n(C)ontinue?'
 		self.players[1].getClient().send(player1Data.encode())
 
 		datafromclient = self.players[0].getClient().recv(1024)
@@ -36,9 +36,10 @@ class Game:
 		pass
 
 	def play(self):
+		end = False
 		while(True):
 
-			self.players[self.turn].turn()
+			end = self.players[self.turn].turn()
 
 			if self.turn == 0:
 				self.turn = 1
@@ -46,7 +47,7 @@ class Game:
 				self.turn = 0
 
 
-	def create_sockets(self, port1=2020,port2=2929,host='127.0.0.1'):
+	def create_sockets(self, port1=2029,port2=2828,host='172.30.53.10'):
 		sock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		sock1.bind((host, port1))
@@ -103,3 +104,5 @@ class Game:
 game = Game()
 
 game.play()
+
+game.end()
